@@ -134,6 +134,14 @@ data:
             key: /run/podidentity.podcert.ate.dev/credential-bundle.pem
             root: /run/servicedns-ca/trust-bundle.pem
 
+      substrateEgressActorResolution:
+        host: api.ate-system.svc:443
+        policies:
+          backendTLS:
+            cert: /run/podidentity.podcert.ate.dev/credential-bundle.pem
+            key: /run/podidentity.podcert.ate.dev/credential-bundle.pem
+            root: /run/servicedns-ca/trust-bundle.pem
+
     binds:
     # Authenticate the actor before accepting CONNECT.
     - port: 8443
