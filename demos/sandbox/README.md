@@ -78,6 +78,11 @@ go build -o bin/sandbox-client ./demos/sandbox/client
 ./bin/sandbox-client --ateapi=localhost:8080 --atenet=localhost:8000 --atespace=ate-demo-sandbox --name=my-sandbox-1
 ```
 
+The client authenticates to ate-api the same way `kubectl ate` does: it
+reads your kubeconfig, mints an `ate-client` ServiceAccount token, and
+verifies the server certificate. You do not pass a token on the command
+line.
+
 The client sends each `/process` request to the router and automatically sets
 the routing header from `--name` and `--atespace`:
 

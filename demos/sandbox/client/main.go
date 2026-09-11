@@ -17,7 +17,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -28,12 +27,11 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/agent-substrate/substrate/internal/ateclient"
 	"github.com/agent-substrate/substrate/internal/atenet"
 	"github.com/agent-substrate/substrate/internal/resources"
 	"github.com/agent-substrate/substrate/pkg/proto/ateapipb"
 	"github.com/spf13/pflag"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 )
 
 type ProcessRequest struct {
@@ -47,17 +45,6 @@ type ProcessResponse struct {
 	Stdout string `json:"stdout"`
 	Stderr string `json:"stderr"`
 	Error  string `json:"error,omitempty"`
-}
-
-func dialAteAPI(endpoint string) (ateapipb.ControlClient, *grpc.ClientConn, error) {
-	creds := credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})
-
-	conn, err := grpc.NewClient(endpoint, grpc.WithTransportCredentials(creds))
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return ateapipb.NewControlClient(conn), conn, nil
 }
 
 func main() {
@@ -87,13 +74,14 @@ func main() {
 		cancel()
 	}()
 
-	// 1. Connect to ateapi and Resume Actor
+	// 1. Connect to ateapi and Resume Actor. NewClient mints an ate-client
+	// token and verifies ateapi's cert the same way kubectl-ate does.
 	log.Printf("Connecting to ateapi at %s...", *ateapiAddr)
-	cli, conn, err := dialAteAPI(*ateapiAddr)
+	cli, err := ateclient.NewClient(ctx, "", "", *ateapiAddr, "", false)
 	if err != nil {
 		log.Fatalf("Failed to dial ateapi: %v", err)
 	}
-	defer conn.Close()
+	defer cli.Close()
 
 	log.Printf("Resuming actor %s...", actorRef.Name)
 	_, err = cli.ResumeActor(ctx, &ateapipb.ResumeActorRequest{Actor: actorRef.ToObjectRef()})
