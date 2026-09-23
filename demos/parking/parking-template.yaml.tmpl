@@ -26,6 +26,9 @@ containers:
 - name: counter
   image: ko://github.com/agent-substrate/substrate/demos/counter
   command: ["/ko-app/counter"]
+  volumeMounts:
+  - name: data
+    mountPath: /home/counter
 snapshotConfig:
   onPause: SNAPSHOT_CONTENT_SCOPE_FULL
   onCommit: SNAPSHOT_CONTENT_SCOPE_FULL
@@ -33,3 +36,6 @@ snapshotConfig:
 sandboxConfig:
   sandboxClass: SANDBOX_CLASS_GVISOR
   configName: gvisor-default
+volumes:
+- name: data
+  durableDir: {}
